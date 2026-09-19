@@ -1,9 +1,9 @@
 """Inference: โหลดโมเดลที่ฝึกแล้ว -> ทำนายภาพตัวอักษรไทย
 
 ใช้งาน
-    python scripts/predict.py --ckpt weights/resnet50_best.pt --input <โฟลเดอร์ภาพ>
-    python scripts/predict.py --ckpt weights/resnet50_best.pt --input a.jpg
-    python scripts/predict.py --ckpt weights/resnet50_best.pt --input <โฟลเดอร์> --out result.csv
+    python scripts/inference.py --ckpt weights/resnet50_best.pt --input <โฟลเดอร์ภาพ>
+    python scripts/inference.py --ckpt weights/resnet50_best.pt --input a.jpg
+    python scripts/inference.py --ckpt weights/resnet50_best.pt --input <โฟลเดอร์> --out result.csv
 
 ถ้าโฟลเดอร์จัดเป็น <input>/<รหัส TIS-620>/*.jpg (แบบเดียวกับชุดฝึกสอน)
 จะคำนวณ accuracy ให้ด้วย

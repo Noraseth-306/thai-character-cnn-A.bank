@@ -1,11 +1,15 @@
-"""Phase 6: ดูว่าโมเดลสับสนคู่ไหน -- ใช้ตัดสินใจว่า Phase ถัดไปควรแก้อะไร"""
+"""Evaluation: วัด Accuracy และดูว่าโมเดลสับสนตัวอักษรคู่ใดบ้าง
+
+ตัวอย่าง:
+    python scripts/evaluate.py --ckpt weights/resnet50_best.pt
+"""
 import argparse
 import sys
 from pathlib import Path
 
 import numpy as np
 import torch
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, f1_score
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
@@ -18,7 +22,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ckpt", default="runs/baseline/best.pt")
+    ap.add_argument("--ckpt", default="weights/resnet50_best.pt")
     ap.add_argument("--index", default="index.csv")
     ap.add_argument("--root", default="ThaiCharacter Dataset")
     ap.add_argument("--top", type=int, default=15)
@@ -43,8 +47,12 @@ def main() -> None:
     preds = torch.cat(preds).numpy()
     trues = va.labels.numpy()
 
+    accuracy = (preds == trues).mean()
+    macro_f1 = f1_score(trues, preds, average="macro", zero_division=0)
     cm = confusion_matrix(trues, preds, labels=range(n))
-    print(f"{args.ckpt}  |  val acc {(preds == trues).mean():.4f}\n")
+    print(f"Checkpoint : {args.ckpt}")
+    print(f"Val Accuracy: {accuracy:.4f}")
+    print(f"Val Macro-F1: {macro_f1:.4f}\n")
 
     # เอาเฉพาะคู่ที่สับสนจริง (ตัดแนวทแยงทิ้ง)
     np.fill_diagonal(cm, 0)
@@ -65,10 +73,6 @@ def main() -> None:
     novál = [names[i] for i in range(n) if support[i] == 0]
     if noval := novál:
         print(f"\nคลาสที่ไม่มี val เลย (ตัวเลขข้างบนมองไม่เห็น): {' '.join(noval)}")
-
-
-if __name__ == "__main__":
-    main()
 
 
 def per_class_recall(ckpt: str, index: str, root: str) -> "pd.Series":
@@ -93,3 +97,7 @@ def per_class_recall(ckpt: str, index: str, root: str) -> "pd.Series":
     return pd.Series(
         {names[c]: (pr[tr == c] == c).mean() for c in range(len(names)) if (tr == c).sum()}
     )
+
+
+if __name__ == "__main__":
+    main()

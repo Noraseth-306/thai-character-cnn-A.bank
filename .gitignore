@@ -20,6 +20,7 @@ PrintAksorn_dataset/
 Thai_char_sqr/
 Thai_digit_sqr/
 synth/
+1-Multiclass Image Classification/
 
 # Generated indexes and prediction outputs
 index.csv

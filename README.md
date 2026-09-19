@@ -30,7 +30,14 @@
 CNN-project/
 ├── README.md                     # เอกสารโครงการและวิธีใช้งานทั้งหมด
 ├── requirements.txt              # ไลบรารีที่ต้องติดตั้ง
-├── scripts/                      # เตรียมข้อมูล ฝึก ประเมิน และทำนาย
+├── scripts/                      # โปรแกรมแต่ละขั้น แยกเป็นไฟล์ Python
+│   ├── train.py                  # ฝึกโมเดลและบันทึก Weight
+│   ├── evaluate.py               # วัด Accuracy/Macro-F1 และวิเคราะห์ข้อผิดพลาด
+│   ├── inference.py              # ทำนายภาพใหม่ด้วย Weight ที่ฝึกแล้ว
+│   ├── pipeline.py               # เรียกทุกขั้นตอนแบบ end-to-end
+│   ├── prepare_data.py           # Clean และแบ่ง Train/Validation
+│   ├── synth.py                  # สร้างข้อมูลสังเคราะห์จาก PrintAksorn
+│   └── mix_synth.py              # เติมข้อมูลเฉพาะคลาสที่มีภาพน้อย
 ├── src/thai_char_cnn/            # Dataset, preprocessing และโมเดล
 ├── tests/                        # ตรวจสอบ preprocessing
 ├── weights/                      # Weight หลักที่ฝึกเรียบร้อยแล้ว
@@ -42,7 +49,7 @@ CNN-project/
 
 หน้าแรกของ GitHub จึงแสดงเฉพาะเอกสารและโฟลเดอร์สำคัญ ส่วน Dataset, synthetic data, index และผลทดลองชั่วคราวถูกกันออกด้วย `.gitignore`
 
-สำหรับ Inference ใช้ `scripts/predict.py`, โค้ดใน `src/thai_char_cnn/` และ `weights/resnet50_best.pt` โดย mapping ระหว่าง label กับอักขระไทยทั้ง 72 คลาสถูกบันทึกอยู่ใน Weight แล้ว
+สำหรับ Inference ใช้ `scripts/inference.py`, โค้ดใน `src/thai_char_cnn/` และ `weights/resnet50_best.pt` โดย mapping ระหว่าง label กับอักขระไทยทั้ง 72 คลาสถูกบันทึกอยู่ใน Weight แล้ว
 
 ## ชุดข้อมูล
 
@@ -406,7 +413,7 @@ Classification Head เดิมสำหรับ ImageNet 1,000 คลาส�
 - `args`: ค่า parameter ที่ใช้ฝึก เช่น architecture และ image size
 - `classes`: mapping label ไปเป็นอักขระทั้ง 72 คลาส
 
-การฝัง `classes` และ `args` ทำให้ `scripts/predict.py` โหลด architecture, ขนาดภาพ และ mapping ได้จาก Weight โดยตรง
+การฝัง `classes` และ `args` ทำให้ `scripts/inference.py` โหลด architecture, ขนาดภาพ และ mapping ได้จาก Weight โดยตรง
 
 ### การฝึก Transfer Learning สองระยะ
 
@@ -523,7 +530,7 @@ python scripts/train.py `
 สามารถวิเคราะห์คู่คลาสที่สับสนได้ด้วย
 
 ```powershell
-python scripts/analyze.py --ckpt weights/resnet50_best.pt
+python scripts/evaluate.py --ckpt weights/resnet50_best.pt
 ```
 
 คู่ที่พบว่าสับสนบ่อย ได้แก่ `ๅ -> า`, `า -> ๅ`, `า -> ว`, `ั -> ้`, `บ -> น` และ `ด -> ต`
@@ -586,7 +593,7 @@ runs/mix_resnet50/best.pt
 ### ทำนายภาพเดียว
 
 ```powershell
-python scripts/predict.py `
+python scripts/inference.py `
   --ckpt weights/resnet50_best.pt `
   --input "path/to/image.jpg"
 ```
@@ -600,7 +607,7 @@ bc_001sg_3_118.jpg -> ก (รหัส 161, ความมั่นใจ 0.90
 ### ทำนายทั้งโฟลเดอร์
 
 ```powershell
-python scripts/predict.py `
+python scripts/inference.py `
   --ckpt weights/resnet50_best.pt `
   --input "path/to/images" `
   --out result.csv
@@ -682,10 +689,10 @@ python scripts/train.py `
   --out runs/tl_resnet50
 
 # 4. วิเคราะห์ผล
-python scripts/analyze.py --ckpt weights/resnet50_best.pt
+python scripts/evaluate.py --ckpt weights/resnet50_best.pt
 
 # 5. ทดลอง Inference
-python scripts/predict.py `
+python scripts/inference.py `
   --ckpt weights/resnet50_best.pt `
   --input "ThaiCharacter Dataset/161"
 ```
@@ -714,7 +721,7 @@ python scripts/train.py `
   --out runs/mix_resnet50
 
 # 5. ทำนายด้วย Weight ที่ได้
-python scripts/predict.py `
+python scripts/inference.py `
   --ckpt runs/mix_resnet50/best.pt `
   --input "path/to/images" `
   --out result.csv

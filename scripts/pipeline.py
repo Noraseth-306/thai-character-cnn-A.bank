@@ -157,12 +157,12 @@ def main() -> None:
             [model_dir / "best.pt", model_dir / "history.csv", model_dir / "report.json"],
         ),
         "evaluate": (
-            [py, str(SCRIPT_DIR / "analyze.py"), "--ckpt", str(model_dir / "best.pt"),
+            [py, str(SCRIPT_DIR / "evaluate.py"), "--ckpt", str(model_dir / "best.pt"),
              "--index", args.index, "--root", args.real_root],
             [],
         ),
         "smoke": (
-            [py, str(SCRIPT_DIR / "predict.py"), "--ckpt", str(model_dir / "best.pt"),
+            [py, str(SCRIPT_DIR / "inference.py"), "--ckpt", str(model_dir / "best.pt"),
              "--input", str(sample)] if sample else [],
             [],
         ),
