@@ -34,13 +34,8 @@ index_mixed_quick.csv
 synth_index_quick.csv
 synth_quick/
 
-# Experiment outputs: keep only the selected ResNet-50 checkpoint and metrics
-runs/*
-!runs/tl_resnet50/
-runs/tl_resnet50/*
-!runs/tl_resnet50/best.pt
-!runs/tl_resnet50/history.csv
-!runs/tl_resnet50/report.json
+# Experiment outputs (selected checkpoint and metrics live in weights/ and results/)
+runs/
 runs_split85/
 
 # Local course material

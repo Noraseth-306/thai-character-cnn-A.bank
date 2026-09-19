@@ -28,31 +28,21 @@
 
 ```text
 CNN-project/
-├── ThaiCharacter Dataset/       # ชุดข้อมูลหลักจากอาจารย์
-├── PrintAksorn_dataset/          # ชุดข้อมูลตัวพิมพ์หลายฟอนต์
-├── synth/                        # ภาพ PrintAksorn ที่ปรับ domain แล้ว
-├── runs/                         # Weight และผลการฝึกแต่ละการทดลอง
-│   ├── baseline/
-│   ├── tl_resnet18/
-│   ├── tl_resnet50/
-│   ├── mix_smallcnn/
-│   └── mix_resnet50/
-├── prepare_data.py               # สำรวจข้อมูลและสร้าง Train/Validation split
-├── data.py                       # Dataset, preprocessing และ augmentation
-├── model.py                      # Custom CNN และโมเดล Transfer Learning
-├── train.py                      # Training loop และบันทึก Weight
-├── predict.py                    # Inference ภาพเดี่ยวหรือทั้งโฟลเดอร์
-├── synth.py                      # ปรับ PrintAksorn ให้ใกล้ข้อมูลจริง
-├── mix_synth.py                  # เติมภาพเฉพาะคลาสข้อมูลน้อย
-├── pipeline.py                   # รันทุกขั้นตอนแบบ end-to-end
-├── analyze.py                    # วิเคราะห์ผลรายคลาสและ confusion pairs
-├── test_data.py                  # ตรวจสอบ preprocessing
-├── index.csv                     # ดัชนีข้อมูลจริงและ Train/Validation split
-├── synth_index.csv               # ดัชนีภาพที่ผ่านการปรับ domain
-└── index_mixed.csv               # ดัชนี Train ที่เติมคลาสข้อมูลน้อย
+├── README.md                     # เอกสารโครงการและวิธีใช้งานทั้งหมด
+├── requirements.txt              # ไลบรารีที่ต้องติดตั้ง
+├── scripts/                      # เตรียมข้อมูล ฝึก ประเมิน และทำนาย
+├── src/thai_char_cnn/            # Dataset, preprocessing และโมเดล
+├── tests/                        # ตรวจสอบ preprocessing
+├── weights/                      # Weight หลักที่ฝึกเรียบร้อยแล้ว
+│   └── resnet50_best.pt
+├── results/                      # Metric และรายงานของ Weight หลัก
+├── figures/                      # รูปผลลัพธ์สำหรับรายงาน
+└── runs/                         # ผลทดลองในเครื่อง (ไม่อัปโหลดขึ้น Git)
 ```
 
-ไฟล์ที่จำเป็นสำหรับ Inference มีเพียง `predict.py`, `data.py`, `model.py` และไฟล์ Weight `.pt` ที่เลือกใช้ เนื่องจาก mapping ระหว่าง label กับอักขระไทยทั้ง 72 คลาสถูกบันทึกอยู่ใน Weight แล้ว
+หน้าแรกของ GitHub จึงแสดงเฉพาะเอกสารและโฟลเดอร์สำคัญ ส่วน Dataset, synthetic data, index และผลทดลองชั่วคราวถูกกันออกด้วย `.gitignore`
+
+สำหรับ Inference ใช้ `scripts/predict.py`, โค้ดใน `src/thai_char_cnn/` และ `weights/resnet50_best.pt` โดย mapping ระหว่าง label กับอักขระไทยทั้ง 72 คลาสถูกบันทึกอยู่ใน Weight แล้ว
 
 ## ชุดข้อมูล
 
@@ -132,7 +122,7 @@ python -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_
 
 ## การรัน Pipeline คำสั่งเดียว
 
-`pipeline.py` รวมขั้นตอนหลักทั้งหมดไว้ในคำสั่งเดียว โดยใช้โมเดล ResNet-50 และข้อมูลสังเคราะห์แบบเติมเฉพาะคลาสที่ขาดแคลน เส้นทางนี้จึงมีครบทั้ง Transfer Learning, Data Augmentation และแนวคิด Targeted Synthetic Top-up
+`scripts/pipeline.py` รวมขั้นตอนหลักทั้งหมดไว้ในคำสั่งเดียว โดยใช้โมเดล ResNet-50 และข้อมูลสังเคราะห์แบบเติมเฉพาะคลาสที่ขาดแคลน เส้นทางนี้จึงมีครบทั้ง Transfer Learning, Data Augmentation และแนวคิด Targeted Synthetic Top-up
 
 ```text
 PREPARE
@@ -157,7 +147,7 @@ SMOKE TEST
 ### รัน Pipeline เต็ม
 
 ```powershell
-python pipeline.py
+python scripts/pipeline.py
 ```
 
 ค่ามาตรฐานของ Pipeline
@@ -195,7 +185,7 @@ pipeline_summary.json
 โหมด `--quick` ใช้ synthetic จำนวนน้อยและฝึกเพียง 1 epoch จุดประสงค์คือทดสอบว่าแต่ละขั้นเชื่อมต่อกันถูกต้อง ไม่ได้ใช้สร้าง Weight สำหรับส่งงาน
 
 ```powershell
-python pipeline.py --quick
+python scripts/pipeline.py --quick
 ```
 
 Quick pipeline ถูกทดสอบแล้วและผ่านครบทุกขั้น ตั้งแต่สร้าง index จนถึงโหลด Weight ทำนายภาพจริง
@@ -203,7 +193,7 @@ Quick pipeline ถูกทดสอบแล้วและผ่านคร�
 ### ดูคำสั่งโดยไม่รัน
 
 ```powershell
-python pipeline.py --dry-run
+python scripts/pipeline.py --dry-run
 ```
 
 คำสั่งนี้เหมาะสำหรับตรวจ path และ parameter ก่อนเริ่มงานที่ใช้เวลานาน
@@ -211,7 +201,7 @@ python pipeline.py --dry-run
 ### ทำงานต่อจาก Output เดิม
 
 ```powershell
-python pipeline.py --resume
+python scripts/pipeline.py --resume
 ```
 
 `--resume` จะข้ามขั้น Prepare, Synth, Mix หรือ Train เมื่อพบ Output ที่จำเป็นครบแล้ว ส่วน Evaluate และ Smoke Test จะรันใหม่เพื่อยืนยันว่า Weight ยังโหลดได้
@@ -220,13 +210,13 @@ python pipeline.py --resume
 
 ```powershell
 # เริ่มจาก Train โดยใช้ index ที่สร้างไว้แล้ว
-python pipeline.py --start-at train
+python scripts/pipeline.py --start-at train
 
 # ทำเฉพาะ Prepare ถึง Mix
-python pipeline.py --stop-after mix
+python scripts/pipeline.py --stop-after mix
 
 # ประเมิน Weight ที่มีอยู่แล้ว
-python pipeline.py `
+python scripts/pipeline.py `
   --start-at evaluate `
   --model-dir runs/mix_resnet50
 ```
@@ -241,21 +231,21 @@ python pipeline.py `
 หากไม่ผ่าน Pipeline จะจบด้วยสถานะผิดพลาดและไม่รายงานว่าโมเดลพร้อมใช้งาน สามารถเปลี่ยนเกณฑ์ได้ด้วย
 
 ```powershell
-python pipeline.py --min-accuracy 0.98 --min-macro-f1 0.96
+python scripts/pipeline.py --min-accuracy 0.98 --min-macro-f1 0.96
 ```
 
 ### Reproducibility
 
-Pipeline ส่ง seed เดียวกันไปยังขั้น Prepare, Synth, Mix และ Train โดย `train.py` กำหนด seed ให้ Python, NumPy, PyTorch และ CUDA พร้อมปิด cuDNN benchmark และเปิด deterministic mode เท่าที่ backend รองรับ
+Pipeline ส่ง seed เดียวกันไปยังขั้น Prepare, Synth, Mix และ Train โดย `scripts/train.py` กำหนด seed ให้ Python, NumPy, PyTorch และ CUDA พร้อมปิด cuDNN benchmark และเปิด deterministic mode เท่าที่ backend รองรับ
 
 ทุกขั้นบันทึกสถานะและระยะเวลาลง `pipeline_state.json` ส่วนผล Quality Gate บันทึกลง `pipeline_summary.json`
 
 ## ขั้นตอนที่ 1 การสำรวจและทำความสะอาดข้อมูล
 
-ดำเนินการด้วย `prepare_data.py`
+ดำเนินการด้วย `scripts/prepare_data.py`
 
 ```powershell
-python prepare_data.py
+python scripts/prepare_data.py
 ```
 
 สคริปต์ทำงานตามลำดับดังนี้
@@ -305,7 +295,7 @@ python prepare_data.py
 
 ## ขั้นตอนที่ 3 การเตรียมภาพก่อนเข้าโมเดล
 
-ดำเนินการใน `data.py` ทุกครั้งที่โหลดข้อมูล
+ดำเนินการใน `src/thai_char_cnn/data.py` ทุกครั้งที่โหลดข้อมูล
 
 ### 3.1 แปลงเป็น Grayscale
 
@@ -390,7 +380,7 @@ Classification Head เดิมสำหรับ ImageNet 1,000 คลาส�
 
 ## ขั้นตอนที่ 5 การฝึกโมเดล
 
-ดำเนินการด้วย `train.py`
+ดำเนินการด้วย `scripts/train.py`
 
 ### Loss Function
 
@@ -416,7 +406,7 @@ Classification Head เดิมสำหรับ ImageNet 1,000 คลาส�
 - `args`: ค่า parameter ที่ใช้ฝึก เช่น architecture และ image size
 - `classes`: mapping label ไปเป็นอักขระทั้ง 72 คลาส
 
-การฝัง `classes` และ `args` ทำให้ `predict.py` โหลด architecture, ขนาดภาพ และ mapping ได้จาก Weight โดยตรง
+การฝัง `classes` และ `args` ทำให้ `scripts/predict.py` โหลด architecture, ขนาดภาพ และ mapping ได้จาก Weight โดยตรง
 
 ### การฝึก Transfer Learning สองระยะ
 
@@ -426,7 +416,7 @@ Classification Head เดิมสำหรับ ImageNet 1,000 คลาส�
 คำสั่งฝึก ResNet-50
 
 ```powershell
-python train.py `
+python scripts/train.py `
   --arch resnet50 `
   --size 96 `
   --bs 48 `
@@ -444,10 +434,10 @@ python train.py `
 ดำเนินการด้วย
 
 ```powershell
-python synth.py
+python scripts/synth.py
 ```
 
-`synth.py` ทำงานดังนี้
+`scripts/synth.py` ทำงานดังนี้
 
 1. อ่าน `master_file.csv` ของ PrintAksorn
 2. เลือกเฉพาะตัวอักษรที่อยู่ใน 72 คลาสของโครงการ
@@ -467,7 +457,7 @@ PrintAksorn ไม่มี `ฤ` จึง render เพิ่มจากฟ�
 ดำเนินการด้วย
 
 ```powershell
-python mix_synth.py --below 100 --cap 400
+python scripts/mix_synth.py --below 100 --cap 400
 ```
 
 หลักการ
@@ -503,7 +493,7 @@ python mix_synth.py --below 100 --cap 400
 คำสั่งฝึก ResNet-50 ด้วยข้อมูลผสม
 
 ```powershell
-python train.py `
+python scripts/train.py `
   --train-index index_mixed.csv `
   --train-root . `
   --arch resnet50 `
@@ -533,7 +523,7 @@ python train.py `
 สามารถวิเคราะห์คู่คลาสที่สับสนได้ด้วย
 
 ```powershell
-python analyze.py --ckpt runs/tl_resnet50/best.pt
+python scripts/analyze.py --ckpt weights/resnet50_best.pt
 ```
 
 คู่ที่พบว่าสับสนบ่อย ได้แก่ `ๅ -> า`, `า -> ๅ`, `า -> ว`, `ั -> ้`, `บ -> น` และ `ด -> ต`
@@ -572,7 +562,7 @@ Validation มี 12,719 ภาพ ช่วงความเชื่อมั
 ใช้
 
 ```text
-runs/tl_resnet50/best.pt
+weights/resnet50_best.pt
 ```
 
 - Validation Accuracy 98.40%
@@ -596,8 +586,8 @@ runs/mix_resnet50/best.pt
 ### ทำนายภาพเดียว
 
 ```powershell
-python predict.py `
-  --ckpt runs/tl_resnet50/best.pt `
+python scripts/predict.py `
+  --ckpt weights/resnet50_best.pt `
   --input "path/to/image.jpg"
 ```
 
@@ -610,8 +600,8 @@ bc_001sg_3_118.jpg -> ก (รหัส 161, ความมั่นใจ 0.90
 ### ทำนายทั้งโฟลเดอร์
 
 ```powershell
-python predict.py `
-  --ckpt runs/tl_resnet50/best.pt `
+python scripts/predict.py `
+  --ckpt weights/resnet50_best.pt `
   --input "path/to/images" `
   --out result.csv
 ```
@@ -677,13 +667,13 @@ Custom CNN ที่มีประมาณ 296,000 parameters ได้ Accura
 
 ```powershell
 # 1. สร้าง index และแบ่งข้อมูลประมาณ 80:20
-python prepare_data.py
+python scripts/prepare_data.py
 
 # 2. ตรวจ preprocessing
-python test_data.py
+python tests/test_data.py
 
 # 3. ฝึก ResNet-50
-python train.py `
+python scripts/train.py `
   --arch resnet50 `
   --size 96 `
   --bs 48 `
@@ -692,11 +682,11 @@ python train.py `
   --out runs/tl_resnet50
 
 # 4. วิเคราะห์ผล
-python analyze.py --ckpt runs/tl_resnet50/best.pt
+python scripts/analyze.py --ckpt weights/resnet50_best.pt
 
 # 5. ทดลอง Inference
-python predict.py `
-  --ckpt runs/tl_resnet50/best.pt `
+python scripts/predict.py `
+  --ckpt weights/resnet50_best.pt `
   --input "ThaiCharacter Dataset/161"
 ```
 
@@ -704,16 +694,16 @@ python predict.py `
 
 ```powershell
 # 1. สร้าง index ข้อมูลจริง
-python prepare_data.py
+python scripts/prepare_data.py
 
 # 2. ปรับ PrintAksorn ให้ใกล้ข้อมูลจริง
-python synth.py
+python scripts/synth.py
 
 # 3. เติมเฉพาะคลาสที่มีข้อมูลจริงน้อยกว่า 100 ภาพ
-python mix_synth.py --below 100 --cap 400
+python scripts/mix_synth.py --below 100 --cap 400
 
 # 4. ฝึกด้วย Train แบบผสมและ Validation จริง
-python train.py `
+python scripts/train.py `
   --train-index index_mixed.csv `
   --train-root . `
   --arch resnet50 `
@@ -724,7 +714,7 @@ python train.py `
   --out runs/mix_resnet50
 
 # 5. ทำนายด้วย Weight ที่ได้
-python predict.py `
+python scripts/predict.py `
   --ckpt runs/mix_resnet50/best.pt `
   --input "path/to/images" `
   --out result.csv
@@ -740,4 +730,4 @@ python predict.py `
 - Macro-F1 สูงสุดที่วัดได้ 97.07%
 - กำหนดส่ง 25 กันยายน 2569 ก่อนเวลา 16:00 น.
 
-รายละเอียดผลการทดลองเพิ่มเติมอยู่ใน `PROJECT_SUMMARY.md` และ `runs/<experiment>/history.csv`
+ผลของ Weight หลักอยู่ใน `results/resnet50_history.csv` และ `results/resnet50_report.json` ส่วนผลทดลองใหม่จะถูกสร้างใน `runs/<experiment>/`

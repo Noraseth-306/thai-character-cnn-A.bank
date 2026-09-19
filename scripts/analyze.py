@@ -1,13 +1,17 @@
 """Phase 6: ดูว่าโมเดลสับสนคู่ไหน -- ใช้ตัดสินใจว่า Phase ถัดไปควรแก้อะไร"""
 import argparse
 import sys
+from pathlib import Path
 
 import numpy as np
 import torch
 from sklearn.metrics import confusion_matrix
 
-from data import ThaiCharDataset, class_names
-from model import build_model
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from thai_char_cnn.data import ThaiCharDataset, class_names
+from thai_char_cnn.model import build_model
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 

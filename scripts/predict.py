@@ -1,9 +1,9 @@
 """Inference: โหลดโมเดลที่ฝึกแล้ว -> ทำนายภาพตัวอักษรไทย
 
 ใช้งาน
-    python predict.py --ckpt best.pt --input <โฟลเดอร์ภาพ>
-    python predict.py --ckpt best.pt --input a.jpg
-    python predict.py --ckpt best.pt --input <โฟลเดอร์> --out result.csv
+    python scripts/predict.py --ckpt weights/resnet50_best.pt --input <โฟลเดอร์ภาพ>
+    python scripts/predict.py --ckpt weights/resnet50_best.pt --input a.jpg
+    python scripts/predict.py --ckpt weights/resnet50_best.pt --input <โฟลเดอร์> --out result.csv
 
 ถ้าโฟลเดอร์จัดเป็น <input>/<รหัส TIS-620>/*.jpg (แบบเดียวกับชุดฝึกสอน)
 จะคำนวณ accuracy ให้ด้วย
@@ -19,8 +19,11 @@ import torch
 import torch.nn.functional as F
 from PIL import Image
 
-from data import build_transform
-from model import build_model
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from thai_char_cnn.data import build_transform
+from thai_char_cnn.model import build_model
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 

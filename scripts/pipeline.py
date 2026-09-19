@@ -9,11 +9,11 @@
     6) smoke     โหลด Weight แล้วทำนายภาพจริงหนึ่งภาพ
 
 ตัวอย่าง:
-    python pipeline.py
-    python pipeline.py --resume
-    python pipeline.py --dry-run
-    python pipeline.py --quick
-    python pipeline.py --start-at train --resume
+    python scripts/pipeline.py
+    python scripts/pipeline.py --resume
+    python scripts/pipeline.py --dry-run
+    python scripts/pipeline.py --quick
+    python scripts/pipeline.py --start-at train --resume
 """
 from __future__ import annotations
 
@@ -27,8 +27,11 @@ from pathlib import Path
 
 import pandas as pd
 
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 STAGES = ("prepare", "synth", "mix", "train", "evaluate", "smoke")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
 
 
 def command_text(command: list[str]) -> str:
@@ -61,6 +64,8 @@ def stage_range(start: str, stop: str) -> tuple[str, ...]:
 
 
 def main() -> None:
+    # ทำให้ path ค่าเริ่มต้นอ้างอิงจาก root ของโครงการเสมอ
+    os.chdir(PROJECT_ROOT)
     ap = argparse.ArgumentParser(description="Thai Character CNN end-to-end pipeline")
     ap.add_argument("--real-root", default="ThaiCharacter Dataset")
     ap.add_argument("--print-root", default="PrintAksorn_dataset")
@@ -123,19 +128,19 @@ def main() -> None:
     sample = next(root.rglob("*.jpg"), None)
     commands: dict[str, tuple[list[str], list[Path]]] = {
         "prepare": (
-            [py, "prepare_data.py", "--root", args.real_root, "--out", args.index,
+            [py, str(SCRIPT_DIR / "prepare_data.py"), "--root", args.real_root, "--out", args.index,
              "--val-frac", "0.20", "--seed", str(args.seed)],
             [Path(args.index)],
         ),
         "synth": (
-            [py, "synth.py", "--index", args.index, "--real-root", args.real_root,
+            [py, str(SCRIPT_DIR / "synth.py"), "--index", args.index, "--real-root", args.real_root,
              "--pim", args.print_root, "--out", args.synth_root,
              "--index-out", args.synth_index, "--per-class", str(args.per_class),
              "--seed", str(args.seed)],
             [Path(args.synth_index), Path(args.synth_root)],
         ),
         "mix": (
-            [py, "mix_synth.py", "--real-index", args.index,
+            [py, str(SCRIPT_DIR / "mix_synth.py"), "--real-index", args.index,
              "--synth-index", args.synth_index, "--real-root", args.real_root,
              "--synth-root", args.synth_root, "--below", str(args.below),
              "--cap", str(args.cap), "--out", args.mixed_index,
@@ -143,7 +148,7 @@ def main() -> None:
             [Path(args.mixed_index)],
         ),
         "train": (
-            [py, "train.py", "--index", args.index, "--root", args.real_root,
+            [py, str(SCRIPT_DIR / "train.py"), "--index", args.index, "--root", args.real_root,
              "--train-index", args.mixed_index, "--train-root", ".",
              "--train-split", "train", "--arch", "resnet50", "--size", "96",
              "--bs", str(args.batch_size), "--epochs", str(args.epochs),
@@ -152,12 +157,12 @@ def main() -> None:
             [model_dir / "best.pt", model_dir / "history.csv", model_dir / "report.json"],
         ),
         "evaluate": (
-            [py, "analyze.py", "--ckpt", str(model_dir / "best.pt"),
+            [py, str(SCRIPT_DIR / "analyze.py"), "--ckpt", str(model_dir / "best.pt"),
              "--index", args.index, "--root", args.real_root],
             [],
         ),
         "smoke": (
-            [py, "predict.py", "--ckpt", str(model_dir / "best.pt"),
+            [py, str(SCRIPT_DIR / "predict.py"), "--ckpt", str(model_dir / "best.pt"),
              "--input", str(sample)] if sample else [],
             [],
         ),

@@ -1,9 +1,16 @@
-"""Self-check ส่วนที่พังแล้วเงียบ: รัน `python test_data.py`"""
+"""Self-check ส่วนที่พังแล้วเงียบ: รัน `python tests/test_data.py`"""
+import sys
+from pathlib import Path
+
 import numpy as np
 import torch
 from PIL import Image
 
-from data import PadToSquare, build_transform
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+
+from thai_char_cnn.data import PadToSquare, build_transform
 from prepare_data import tis620_char
 
 

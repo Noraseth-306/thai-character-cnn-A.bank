@@ -17,8 +17,11 @@ import torch.nn as nn
 from sklearn.metrics import classification_report, f1_score
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from data import ThaiCharDataset, class_names
-from model import build_model
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from thai_char_cnn.data import ThaiCharDataset, class_names
+from thai_char_cnn.model import build_model
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
