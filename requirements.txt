@@ -1,0 +1,7 @@
+numpy>=2.4,<3
+pandas>=3.0,<4
+Pillow>=12.3,<13
+scikit-learn>=1.9,<2
+matplotlib>=3.10,<4
+torch>=2.9
+torchvision>=0.24

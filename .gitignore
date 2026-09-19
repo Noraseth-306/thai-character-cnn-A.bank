@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Datasets are not redistributed in this repository
+ThaiCharacter Dataset/
+PrintAksorn_dataset/
+Thai_char_sqr/
+Thai_digit_sqr/
+synth/
+
+# Generated indexes and prediction outputs
+index.csv
+index_mixed.csv
+synth_index.csv
+synth_domain_check.csv
+result.csv
+
+# Experiment outputs: keep only the selected ResNet-50 checkpoint and metrics
+runs/*
+!runs/tl_resnet50/
+runs/tl_resnet50/*
+!runs/tl_resnet50/best.pt
+!runs/tl_resnet50/history.csv
+!runs/tl_resnet50/report.json
+runs_split85/
+
+# Local course material
+trainingCNNtutorail.pdf
+
