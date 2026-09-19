@@ -83,8 +83,10 @@ def degrade(crop: np.ndarray, target_h: int, target_ink: float, rng) -> bytes | 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--index", default="index.csv")
+    ap.add_argument("--real-root", default="ThaiCharacter Dataset")
     ap.add_argument("--pim", default="PrintAksorn_dataset")
     ap.add_argument("--out", default="synth")
+    ap.add_argument("--index-out", default="synth_index.csv")
     ap.add_argument("--per-class", type=int, default=406)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
@@ -100,7 +102,7 @@ def main() -> None:
     )
     ink_by_char: dict[str, list[float]] = {}
     for ch, path in zip(real.loc[sample.index, "char"], sample["path"]):
-        a = np.asarray(Image.open(f"ThaiCharacter Dataset/{path}").convert("L"))
+        a = np.asarray(Image.open(f"{args.real_root}/{path}").convert("L"))
         ink_by_char.setdefault(ch, []).append(float((a < 128).mean()))
     global_ink = np.concatenate(list(ink_by_char.values()))
     global_h = real["height"].to_numpy()
@@ -159,8 +161,8 @@ def main() -> None:
         print(f"  {ch} (code {code}): {args.per_class} ภาพ", flush=True)
 
     df = pd.DataFrame(rows)
-    df.to_csv("synth_index.csv", index=False, encoding="utf-8-sig")
-    print(f"\nสร้าง {len(df):,} ภาพ ({skipped} ข้าม) -> {out_root}/ + synth_index.csv")
+    df.to_csv(args.index_out, index=False, encoding="utf-8-sig")
+    print(f"\nสร้าง {len(df):,} ภาพ ({skipped} ข้าม) -> {out_root}/ + {args.index_out}")
 
 
 if __name__ == "__main__":

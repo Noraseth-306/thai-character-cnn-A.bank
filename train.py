@@ -5,6 +5,7 @@ accuracy เฉย ๆ โกงได้ง่ายมากในชุดน
 """
 import argparse
 import json
+import random
 import sys
 import time
 from pathlib import Path
@@ -20,6 +21,18 @@ from data import ThaiCharDataset, class_names
 from model import build_model
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
+def seed_everything(seed: int) -> None:
+    """กำหนด seed ให้การทดลองทำซ้ำได้ใกล้เคียงกันทุกครั้ง"""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    # เลือก reproducibility มากกว่าความเร็วเล็กน้อย
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
 
 def run_epoch(model, loader, device, criterion, optimizer=None):
@@ -72,11 +85,14 @@ def main() -> None:
     ap.add_argument("--epochs", type=int, default=20)
     ap.add_argument("--bs", type=int, default=256)
     ap.add_argument("--lr", type=float, default=1e-3)
+    ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--aug", default="none", choices=["none", "affine", "domain"],
                     help="none | affine (วัดแล้วแย่ลง) | domain (dilate/erode ตามการสแกนจริง)")
     ap.add_argument("--balanced-sampler", action="store_true", help="Phase 4: แก้ imbalance")
     ap.add_argument("--class-weights", action="store_true", help="Phase 4: ถ่วงน้ำหนัก loss")
     args = ap.parse_args()
+
+    seed_everything(args.seed)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)

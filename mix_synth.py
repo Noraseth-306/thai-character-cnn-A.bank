@@ -16,17 +16,22 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 def main() -> None:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--real-index", default="index.csv")
+    ap.add_argument("--synth-index", default="synth_index.csv")
+    ap.add_argument("--real-root", default="ThaiCharacter Dataset")
+    ap.add_argument("--synth-root", default="synth")
     ap.add_argument("--below", type=int, default=100, help="เติมคลาสที่มีภาพจริงน้อยกว่านี้")
     ap.add_argument("--cap", type=int, default=400, help="เติมจนมีรวมไม่เกินกี่ภาพ")
     ap.add_argument("--out", default="index_mixed.csv")
+    ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
 
-    real = pd.read_csv("index.csv", encoding="utf-8-sig")
-    syn = pd.read_csv("synth_index.csv", encoding="utf-8-sig")
+    real = pd.read_csv(args.real_index, encoding="utf-8-sig")
+    syn = pd.read_csv(args.synth_index, encoding="utf-8-sig")
 
     tr = real[real.split == "train"].copy()
-    tr["path"] = "ThaiCharacter Dataset/" + tr["path"]
-    syn["path"] = "synth/" + syn["path"]
+    tr["path"] = args.real_root.rstrip("/\\") + "/" + tr["path"]
+    syn["path"] = args.synth_root.rstrip("/\\") + "/" + syn["path"]
 
     n_train = tr.char.value_counts()
     need = {c: min(args.cap - n, args.cap) for c, n in n_train.items() if n < args.below}
@@ -37,7 +42,7 @@ def main() -> None:
         if pool.empty:
             print(f"  ! {ch}: ไม่มีภาพสังเคราะห์ ข้าม")
             continue
-        picked.append(pool.sample(min(k, len(pool)), random_state=0))
+        picked.append(pool.sample(min(k, len(pool)), random_state=args.seed))
 
     add = pd.concat(picked) if picked else syn.iloc[:0]
     add["split"] = "train"

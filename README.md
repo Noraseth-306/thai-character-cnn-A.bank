@@ -9,19 +9,20 @@
 1. [โครงสร้างโครงการ](#โครงสร้างโครงการ)
 2. [ชุดข้อมูล](#ชุดข้อมูล)
 3. [การติดตั้ง](#การติดตั้ง)
-4. [ขั้นตอนที่ 1 การสำรวจและทำความสะอาดข้อมูล](#ขั้นตอนที่-1-การสำรวจและทำความสะอาดข้อมูล)
-5. [ขั้นตอนที่ 2 การแบ่ง Train และ Validation](#ขั้นตอนที่-2-การแบ่ง-train-และ-validation)
-6. [ขั้นตอนที่ 3 การเตรียมภาพก่อนเข้าโมเดล](#ขั้นตอนที่-3-การเตรียมภาพก่อนเข้าโมเดล)
-7. [ขั้นตอนที่ 4 โมเดลที่ใช้](#ขั้นตอนที่-4-โมเดลที่ใช้)
-8. [ขั้นตอนที่ 5 การฝึกโมเดล](#ขั้นตอนที่-5-การฝึกโมเดล)
-9. [ขั้นตอนที่ 6 การเติมข้อมูลให้คลาสขาดแคลน](#ขั้นตอนที่-6-การเติมข้อมูลให้คลาสขาดแคลน)
-10. [ขั้นตอนที่ 7 การประเมินผล](#ขั้นตอนที่-7-การประเมินผล)
-11. [ผลการทดลอง](#ผลการทดลอง)
-12. [การเลือก Weight สำหรับใช้งาน](#การเลือก-weight-สำหรับใช้งาน)
-13. [วิธีทำ Inference](#วิธีทำ-inference)
-14. [การตรวจสอบ Overfitting](#การตรวจสอบ-overfitting)
-15. [ข้อค้นพบจากการทดลอง](#ข้อค้นพบจากการทดลอง)
-16. [วิธีทำซ้ำตั้งแต่ต้น](#วิธีทำซ้ำตั้งแต่ต้น)
+4. [การรัน Pipeline คำสั่งเดียว](#การรัน-pipeline-คำสั่งเดียว)
+5. [ขั้นตอนที่ 1 การสำรวจและทำความสะอาดข้อมูล](#ขั้นตอนที่-1-การสำรวจและทำความสะอาดข้อมูล)
+6. [ขั้นตอนที่ 2 การแบ่ง Train และ Validation](#ขั้นตอนที่-2-การแบ่ง-train-และ-validation)
+7. [ขั้นตอนที่ 3 การเตรียมภาพก่อนเข้าโมเดล](#ขั้นตอนที่-3-การเตรียมภาพก่อนเข้าโมเดล)
+8. [ขั้นตอนที่ 4 โมเดลที่ใช้](#ขั้นตอนที่-4-โมเดลที่ใช้)
+9. [ขั้นตอนที่ 5 การฝึกโมเดล](#ขั้นตอนที่-5-การฝึกโมเดล)
+10. [ขั้นตอนที่ 6 การเติมข้อมูลให้คลาสขาดแคลน](#ขั้นตอนที่-6-การเติมข้อมูลให้คลาสขาดแคลน)
+11. [ขั้นตอนที่ 7 การประเมินผล](#ขั้นตอนที่-7-การประเมินผล)
+12. [ผลการทดลอง](#ผลการทดลอง)
+13. [การเลือก Weight สำหรับใช้งาน](#การเลือก-weight-สำหรับใช้งาน)
+14. [วิธีทำ Inference](#วิธีทำ-inference)
+15. [การตรวจสอบ Overfitting](#การตรวจสอบ-overfitting)
+16. [ข้อค้นพบจากการทดลอง](#ข้อค้นพบจากการทดลอง)
+17. [วิธีทำซ้ำตั้งแต่ต้น](#วิธีทำซ้ำตั้งแต่ต้น)
 
 ## โครงสร้างโครงการ
 
@@ -43,6 +44,7 @@ CNN-project/
 ├── predict.py                    # Inference ภาพเดี่ยวหรือทั้งโฟลเดอร์
 ├── synth.py                      # ปรับ PrintAksorn ให้ใกล้ข้อมูลจริง
 ├── mix_synth.py                  # เติมภาพเฉพาะคลาสข้อมูลน้อย
+├── pipeline.py                   # รันทุกขั้นตอนแบบ end-to-end
 ├── analyze.py                    # วิเคราะห์ผลรายคลาสและ confusion pairs
 ├── test_data.py                  # ตรวจสอบ preprocessing
 ├── index.csv                     # ดัชนีข้อมูลจริงและ Train/Validation split
@@ -127,6 +129,126 @@ python -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_
 ```
 
 หากไม่มี GPU โค้ดจะเปลี่ยนไปใช้ CPU อัตโนมัติ แต่การฝึก ResNet-50 จะใช้เวลานานขึ้นมาก
+
+## การรัน Pipeline คำสั่งเดียว
+
+`pipeline.py` รวมขั้นตอนหลักทั้งหมดไว้ในคำสั่งเดียว โดยใช้โมเดล ResNet-50 และข้อมูลสังเคราะห์แบบเติมเฉพาะคลาสที่ขาดแคลน เส้นทางนี้จึงมีครบทั้ง Transfer Learning, Data Augmentation และแนวคิด Targeted Synthetic Top-up
+
+```text
+PREPARE
+Clean data + group split ประมาณ 80:20
+    ↓
+SYNTH
+ปรับ PrintAksorn ให้ใกล้ domain ภาพสแกนจริง
+    ↓
+MIX
+เติมเฉพาะคลาสที่มีภาพจริงต่ำกว่า 100 ภาพ
+    ↓
+TRAIN
+ResNet-50 ImageNet Transfer Learning + Fine-tuning
+    ↓
+EVALUATE
+Accuracy + Macro-F1 + วิเคราะห์คู่คลาสที่สับสน
+    ↓
+SMOKE TEST
+โหลด Weight และทำนายภาพจริงหนึ่งภาพ
+```
+
+### รัน Pipeline เต็ม
+
+```powershell
+python pipeline.py
+```
+
+ค่ามาตรฐานของ Pipeline
+
+| Parameter | ค่า |
+|---|---:|
+| Seed | 42 |
+| Train/Validation | ประมาณ 80:20 |
+| Synthetic ต่อคลาส | 406 ภาพ |
+| เกณฑ์คลาสข้อมูลน้อย | ต่ำกว่า 100 ภาพ |
+| จำนวนสูงสุดหลังเติม | ประมาณ 400 ภาพต่อคลาส |
+| Architecture | ResNet-50 |
+| Input size | 96 x 96 |
+| Batch size | 64 |
+| Epochs | 15 |
+| Freeze backbone | 3 epochs |
+| Learning rate | 0.001 ก่อนลดระหว่าง Fine-tune |
+
+Output หลักจะอยู่ที่
+
+```text
+index.csv
+synth/
+synth_index.csv
+index_mixed.csv
+runs/pipeline_mix_resnet50/best.pt
+runs/pipeline_mix_resnet50/history.csv
+runs/pipeline_mix_resnet50/report.json
+pipeline_state.json
+pipeline_summary.json
+```
+
+### ทดสอบ Pipeline แบบเร็ว
+
+โหมด `--quick` ใช้ synthetic จำนวนน้อยและฝึกเพียง 1 epoch จุดประสงค์คือทดสอบว่าแต่ละขั้นเชื่อมต่อกันถูกต้อง ไม่ได้ใช้สร้าง Weight สำหรับส่งงาน
+
+```powershell
+python pipeline.py --quick
+```
+
+Quick pipeline ถูกทดสอบแล้วและผ่านครบทุกขั้น ตั้งแต่สร้าง index จนถึงโหลด Weight ทำนายภาพจริง
+
+### ดูคำสั่งโดยไม่รัน
+
+```powershell
+python pipeline.py --dry-run
+```
+
+คำสั่งนี้เหมาะสำหรับตรวจ path และ parameter ก่อนเริ่มงานที่ใช้เวลานาน
+
+### ทำงานต่อจาก Output เดิม
+
+```powershell
+python pipeline.py --resume
+```
+
+`--resume` จะข้ามขั้น Prepare, Synth, Mix หรือ Train เมื่อพบ Output ที่จำเป็นครบแล้ว ส่วน Evaluate และ Smoke Test จะรันใหม่เพื่อยืนยันว่า Weight ยังโหลดได้
+
+### เริ่มหรือหยุดเฉพาะบางช่วง
+
+```powershell
+# เริ่มจาก Train โดยใช้ index ที่สร้างไว้แล้ว
+python pipeline.py --start-at train
+
+# ทำเฉพาะ Prepare ถึง Mix
+python pipeline.py --stop-after mix
+
+# ประเมิน Weight ที่มีอยู่แล้ว
+python pipeline.py `
+  --start-at evaluate `
+  --model-dir runs/mix_resnet50
+```
+
+### Quality Gate
+
+หลัง Train เสร็จ Pipeline จะอ่าน epoch เดียวกับ Weight ที่ถูกเลือกด้วย Macro-F1 และตรวจเกณฑ์เริ่มต้นดังนี้
+
+- Validation Accuracy ต้องไม่น้อยกว่า 0.97
+- Validation Macro-F1 ต้องไม่น้อยกว่า 0.95
+
+หากไม่ผ่าน Pipeline จะจบด้วยสถานะผิดพลาดและไม่รายงานว่าโมเดลพร้อมใช้งาน สามารถเปลี่ยนเกณฑ์ได้ด้วย
+
+```powershell
+python pipeline.py --min-accuracy 0.98 --min-macro-f1 0.96
+```
+
+### Reproducibility
+
+Pipeline ส่ง seed เดียวกันไปยังขั้น Prepare, Synth, Mix และ Train โดย `train.py` กำหนด seed ให้ Python, NumPy, PyTorch และ CUDA พร้อมปิด cuDNN benchmark และเปิด deterministic mode เท่าที่ backend รองรับ
+
+ทุกขั้นบันทึกสถานะและระยะเวลาลง `pipeline_state.json` ส่วนผล Quality Gate บันทึกลง `pipeline_summary.json`
 
 ## ขั้นตอนที่ 1 การสำรวจและทำความสะอาดข้อมูล
 
