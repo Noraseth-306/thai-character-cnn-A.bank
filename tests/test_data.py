@@ -12,12 +12,18 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
 from thai_char_cnn.data import PadToSquare, build_transform
 from prepare_data import tis620_char
+from evaluate_handwritten import code_from_filename
 
 
 def test_tis620():
     assert tis620_char(161) == "ก"
     assert tis620_char(163) == "ฃ"
     assert tis620_char(249) == "๙"
+
+
+def test_handwritten_filename_code():
+    assert code_from_filename(Path("0-161-A1-KO KAI-1002.png")) == 161
+    assert code_from_filename(Path("9-249-B2-NINE-42.png")) == 249
 
 
 def test_pad_keeps_aspect():

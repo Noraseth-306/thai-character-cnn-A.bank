@@ -33,7 +33,9 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     va = ThaiCharDataset(args.index, args.root, "val", size)
-    names = class_names(args.index)
+    # Checkpoint is the source of truth when a validation set omits classes.
+    # Inferring from that subset would shrink/reorder the classifier head.
+    names = ck.get("classes") or class_names(args.index)
     n = len(names)
 
     model = build_model(ck["args"].get("arch", "smallcnn"), n).to(device).eval()
@@ -83,7 +85,7 @@ def per_class_recall(ckpt: str, index: str, root: str) -> "pd.Series":
     import pandas as pd
 
     ck = torch.load(ckpt, map_location="cpu", weights_only=False)
-    names = class_names(index)
+    names = ck.get("classes") or class_names(index)
     va = ThaiCharDataset(index, root, "val", ck["args"]["size"])
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     m = build_model(ck["args"].get("arch", "smallcnn"), len(names)).to(dev).eval()

@@ -32,6 +32,8 @@ pipeline_state.json
 pipeline_summary.json
 index_quick.csv
 index_mixed_quick.csv
+handwritten_index.csv
+universal_index.csv
 synth_index_quick.csv
 synth_quick/
 

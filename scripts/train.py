@@ -103,16 +103,22 @@ def main() -> None:
     print(f"device: {device}  |  args: {vars(args)}\n")
 
     t0 = time.time()
+    init_ck = None
+    if args.init_from:
+        init_ck = torch.load(args.init_from, map_location="cpu", weights_only=False)
+
     tr = ThaiCharDataset(
         args.train_index or args.index, args.train_root or args.root,
         args.train_split, args.size, aug=args.aug,
     )
     va = ThaiCharDataset(args.index, args.root, "val", args.size)
-    names = class_names(args.index)
+    # Fine-tuning datasets may contain only a subset of the original classes.
+    # Keep the checkpoint's complete label mapping and classifier dimensions.
+    names = (init_ck.get("classes") if init_ck else None) or class_names(args.index)
     n_classes = len(names)
     print(f"โหลด train {len(tr):,} / val {len(va):,} ({time.time() - t0:.0f}s) | {n_classes} คลาส")
 
-    counts = tr.class_counts
+    counts = np.pad(tr.class_counts, (0, max(0, n_classes - len(tr.class_counts))))
     if args.balanced_sampler:
         # 1/sqrt(n) ไม่ใช่ 1/n: 1/n จะดันคลาสที่มี 1 รูปหนักเกินจน overfit รูปเดียวนั้น
         w = 1.0 / np.sqrt(np.maximum(counts, 1))
@@ -129,9 +135,7 @@ def main() -> None:
         model.set_backbone_frozen(True)
         print(f"แช่แข็ง backbone {args.freeze_epochs} epoch แรก")
     if args.init_from:
-        model.load_state_dict(
-            torch.load(args.init_from, map_location=device, weights_only=False)["model"]
-        )
+        model.load_state_dict(init_ck["model"])
         print(f"เริ่มจากน้ำหนักของ {args.init_from}")
     print(f"พารามิเตอร์: {sum(p.numel() for p in model.parameters()):,}\n")
 
